@@ -1,0 +1,68 @@
+{% extends 'configurator/base.html' %}
+
+{% block title %}Мои сборки{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold"><i class="bi bi-wrench"></i> Мои сборки</h1>
+        <a href="{% url 'build_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Новая сборка
+        </a>
+    </div>
+
+    {% if builds_with_price %}
+    <div class="row g-4">
+        {% for item in builds_with_price %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title fw-bold">{{ item.obj.name }}</h5>
+                        {% if item.obj.is_public %}
+                        <span class="badge bg-success">Публичная</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Приватная</span>
+                        {% endif %}
+                    </div>
+                    {% if item.obj.description %}
+                    <p class="text-muted small">{{ item.obj.description|truncatechars:80 }}</p>
+                    {% endif %}
+                    <p class="mb-1">
+                        <i class="bi bi-cpu text-primary"></i>
+                        <strong>{{ item.obj.components.count }}</strong> компонентов
+                    </p>
+                    <p class="text-primary fw-bold mb-1">${{ item.total_usd }}</p>
+                    <p class="text-muted small">≈ {{ item.total_rub }} ₽</p>
+                    <p class="text-muted small">
+                        <i class="bi bi-clock"></i>
+                        {{ item.obj.updated_at|date:"d.m.Y" }}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent d-flex gap-2">
+                    <a href="{% url 'build_detail' item.obj.pk %}" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-eye"></i> Открыть
+                    </a>
+                    <a href="{% url 'build_edit' item.obj.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'build_delete' item.obj.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card p-5 text-center">
+        <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+        <h4 class="text-muted">У вас пока нет сборок</h4>
+        <p class="text-muted">Создайте первую сборку и начните подбирать комплектующие</p>
+        <a href="{% url 'build_create' %}" class="btn btn-primary mx-auto" style="width:fit-content;">
+            <i class="bi bi-plus-circle"></i> Создать сборку
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'configurator/base.html' %}
+
+{% block title %}Каталог комплектующих{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="fw-bold mb-4"><i class="bi bi-grid"></i> Каталог комплектующих</h1>
+
+    <div class="card p-3 mb-4">
+        <form method="get">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    {{ form.search }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.category }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.sort }}
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Найти
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <p class="text-muted mb-3">Найдено: <strong>{{ total_count }}</strong> компонентов</p>
+
+    <div class="row g-4">
+        {% for item in component_list %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100">
+                {% if item.obj.image %}
+                <img src="{{ item.obj.image.url }}" class="card-img-top" style="height:180px; object-fit:cover;" alt="{{ item.obj.name }}">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height:180px;">
+                    <i class="bi bi-cpu display-4 text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge badge-category text-white mb-2">{{ item.obj.category.name }}</span>
+                    <h6 class="card-title fw-bold">{{ item.obj }}</h6>
+                    <p class="text-primary fw-bold mb-1">${{ item.obj.price_usd }}</p>
+                    <p class="text-muted small">≈ {{ item.price_rub }} ₽</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'component_detail' item.obj.pk %}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> Подробнее
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Комплектующие не найдены. Попробуйте изменить параметры поиска.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

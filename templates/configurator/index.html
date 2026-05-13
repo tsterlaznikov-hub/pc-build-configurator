@@ -1,0 +1,99 @@
+{% extends 'configurator/base.html' %}
+
+{% block title %}PC Build Configurator — Главная{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-cpu"></i> PC Build Configurator
+        </h1>
+        <p class="lead mb-4">
+            Подбирай комплектующие, проверяй совместимость и собирай идеальный ПК
+        </p>
+        <a href="{% url 'catalog' %}" class="btn btn-light btn-lg me-2">
+            <i class="bi bi-grid"></i> Каталог комплектующих
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'build_create' %}" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-plus-circle"></i> Создать сборку
+        </a>
+        {% else %}
+        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-person-plus"></i> Начать бесплатно
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <i class="bi bi-grid-3x3-gap display-4 text-primary mb-3"></i>
+                <h5>Каталог комплектующих</h5>
+                <p class="text-muted">Процессоры, видеокарты, материнские платы и многое другое с актуальными ценами в рублях</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <i class="bi bi-shield-check display-4 text-success mb-3"></i>
+                <h5>Проверка совместимости</h5>
+                <p class="text-muted">Автоматическая проверка сокетов, форм-факторов и мощности блока питания</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <i class="bi bi-bar-chart display-4 text-warning mb-3"></i>
+                <h5>Аналитика цен</h5>
+                <p class="text-muted">Интерактивные графики распределения цен по категориям и производителям</p>
+            </div>
+        </div>
+    </div>
+
+    {% if categories %}
+    <h2 class="fw-bold mb-4">Категории комплектующих</h2>
+    <div class="row g-3 mb-5">
+        {% for category in categories %}
+        <div class="col-6 col-md-3">
+            <a href="{% url 'catalog' %}?category={{ category.id }}" class="text-decoration-none">
+                <div class="card text-center p-3 h-100">
+                    <h6 class="fw-bold mb-1">{{ category.name }}</h6>
+                    <small class="text-muted">{{ category.component_count }} компонентов</small>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if public_builds %}
+    <h2 class="fw-bold mb-4">Публичные сборки</h2>
+    <div class="row g-4">
+        {% for build in public_builds %}
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ build.name }}</h5>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-person"></i> {{ build.user.username }}
+                    </p>
+                    {% if build.description %}
+                    <p class="card-text text-muted small">{{ build.description|truncatechars:80 }}</p>
+                    {% endif %}
+                    <p class="fw-bold text-primary">
+                        ${{ build.total_price_usd }}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'build_detail' build.pk %}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> Посмотреть сборку
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
