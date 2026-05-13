@@ -40,7 +40,6 @@ def check_compatibility(build):
 
     warnings = []
     components = list(build.components.select_related('category').all())
-
     rules = CompatibilityRule.objects.select_related('category_a', 'category_b').all()
 
     for rule in rules:
@@ -70,14 +69,15 @@ def check_compatibility(build):
 
 
 def get_build_price_chart(build):
-    """Генерирует круговую диаграмму стоимости компонентов сборки."""
+    """Генерирует круговую диаграмму стоимости компонентов сборки в рублях."""
+    rate = get_usd_to_rub_rate()
     components = build.components.select_related('category').all()
 
     if not components:
         return None
 
     labels = [str(c) for c in components]
-    values = [float(c.price_usd) for c in components]
+    values = [round(float(c.price_usd) * rate, 2) for c in components]
 
     fig = go.Figure(data=[go.Pie(
         labels=labels,
@@ -87,7 +87,7 @@ def get_build_price_chart(build):
     )])
 
     fig.update_layout(
-        title='Распределение стоимости компонентов',
+        title='Распределение стоимости компонентов (₽)',
         showlegend=True,
         height=400,
         margin=dict(t=50, b=0, l=0, r=0),
@@ -99,7 +99,8 @@ def get_build_price_chart(build):
 
 
 def get_analytics_charts():
-    """Генерирует графики для страницы аналитики."""
+    """Генерирует графики для страницы аналитики в рублях."""
+    rate = get_usd_to_rub_rate()
     components = Component.objects.select_related('category').all()
 
     if not components:
@@ -108,7 +109,7 @@ def get_analytics_charts():
     data = [
         {
             'category': c.category.name,
-            'price_usd': float(c.price_usd),
+            'price_rub': round(float(c.price_usd) * rate, 2),
             'brand': c.brand,
             'name': str(c),
         }
@@ -116,13 +117,13 @@ def get_analytics_charts():
     ]
     df = pd.DataFrame(data)
 
-    avg_by_category = df.groupby('category')['price_usd'].mean().reset_index()
+    avg_by_category = df.groupby('category')['price_rub'].mean().reset_index()
     fig1 = px.bar(
         avg_by_category,
         x='category',
-        y='price_usd',
-        title='Средняя цена компонентов по категориям (USD)',
-        labels={'category': 'Категория', 'price_usd': 'Средняя цена (USD)'},
+        y='price_rub',
+        title='Средняя цена компонентов по категориям (₽)',
+        labels={'category': 'Категория', 'price_rub': 'Средняя цена (₽)'},
         color='category',
     )
     fig1.update_layout(
@@ -132,15 +133,15 @@ def get_analytics_charts():
         plot_bgcolor='rgba(0,0,0,0)',
     )
 
-    avg_by_brand = df.groupby('brand')['price_usd'].mean().reset_index()
-    avg_by_brand = avg_by_brand.sort_values('price_usd', ascending=False).head(10)
+    avg_by_brand = df.groupby('brand')['price_rub'].mean().reset_index()
+    avg_by_brand = avg_by_brand.sort_values('price_rub', ascending=False).head(10)
     fig2 = px.bar(
         avg_by_brand,
         x='brand',
-        y='price_usd',
-        title='Средняя цена по производителям (USD)',
-        labels={'brand': 'Производитель', 'price_usd': 'Средняя цена (USD)'},
-        color='price_usd',
+        y='price_rub',
+        title='Средняя цена по производителям (₽)',
+        labels={'brand': 'Производитель', 'price_rub': 'Средняя цена (₽)'},
+        color='price_rub',
         color_continuous_scale='Blues',
     )
     fig2.update_layout(
