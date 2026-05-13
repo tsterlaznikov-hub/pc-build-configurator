@@ -76,7 +76,7 @@
                                         {{ component.category.name }}
                                     </span>
                                 </td>
-                                <td>${{ component.price_usd }}</td>
+                                <td>{% widthratio component.price_usd 1 rate %} ₽</td>
                                 {% if user == build.user %}
                                 <td>
                                     <form method="post" action="{% url 'remove_from_build' build.pk component.pk %}">
