@@ -43,8 +43,8 @@
                 <div class="card-body">
                     <span class="badge badge-category text-white mb-2">{{ item.obj.category.name }}</span>
                     <h6 class="card-title fw-bold">{{ item.obj }}</h6>
-                    <p class="text-primary fw-bold mb-1">${{ item.obj.price_usd }}</p>
-                    <p class="text-muted small">≈ {{ item.price_rub }} ₽</p>
+                    <p class="text-primary fw-bold mb-1">{{ item.price_rub }} ₽</p>
+                    <p class="text-muted small">≈ ${{ item.obj.price_usd }}</p>
                 </div>
                 <div class="card-footer bg-transparent">
                     <a href="{% url 'component_detail' item.obj.pk %}" class="btn btn-primary btn-sm w-100">
