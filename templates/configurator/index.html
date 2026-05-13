@@ -82,7 +82,7 @@
                     <p class="card-text text-muted small">{{ build.description|truncatechars:80 }}</p>
                     {% endif %}
                     <p class="fw-bold text-primary">
-                        ${{ build.total_price_usd }}
+                        {% widthratio build.total_price_usd 1 rate %} ₽
                     </p>
                 </div>
                 <div class="card-footer bg-transparent">
