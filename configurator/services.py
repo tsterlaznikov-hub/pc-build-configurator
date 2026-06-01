@@ -7,7 +7,6 @@ from .models import Component, Category
 
 
 def get_usd_to_rub_rate():
-    """Получает актуальный курс USD -> RUB через ExchangeRate-API."""
     cached_rate = cache.get('usd_rub_rate')
     if cached_rate:
         return cached_rate
@@ -26,16 +25,11 @@ def get_usd_to_rub_rate():
 
 
 def convert_to_rub(price_usd):
-    """Конвертирует цену из USD в RUB."""
     rate = get_usd_to_rub_rate()
     return round(float(price_usd) * rate, 2)
 
 
 def check_compatibility(build):
-    """
-    Проверяет совместимость комплектующих в сборке.
-    Возвращает список предупреждений.
-    """
     from .models import CompatibilityRule
 
     warnings = []
@@ -69,7 +63,6 @@ def check_compatibility(build):
 
 
 def get_build_price_chart(build):
-    """Генерирует круговую диаграмму стоимости компонентов сборки в рублях."""
     rate = get_usd_to_rub_rate()
     components = build.components.select_related('category').all()
 
@@ -99,7 +92,6 @@ def get_build_price_chart(build):
 
 
 def get_analytics_charts():
-    """Генерирует графики для страницы аналитики в рублях."""
     rate = get_usd_to_rub_rate()
     components = Component.objects.select_related('category').all()
 
