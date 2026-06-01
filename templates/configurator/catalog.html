@@ -34,7 +34,7 @@
         <div class="col-md-4 col-lg-3">
             <div class="card h-100">
                 {% if item.obj.image %}
-                <img src="{{ item.obj.image.url }}" class="card-img-top" style="height:180px; object-fit:cover;" alt="{{ item.obj.name }}">
+                <img src="{{ item.obj.image.url }}" class="card-img-top" style="height:180px; object-fit:contain; background:#f8f9fa; padding:10px;" alt="{{ item.obj.name }}">
                 {% else %}
                 <div class="bg-light d-flex align-items-center justify-content-center" style="height:180px;">
                     <i class="bi bi-cpu display-4 text-muted"></i>

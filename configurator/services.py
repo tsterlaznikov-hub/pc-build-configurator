@@ -15,7 +15,7 @@ def get_usd_to_rub_rate():
     try:
         response = requests.get(
             'https://api.exchangerate-api.com/v4/latest/USD',
-            timeout=5
+            timeout=2
         )
         data = response.json()
         rate = data['rates']['RUB']
