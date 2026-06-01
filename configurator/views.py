@@ -209,12 +209,14 @@ def analytics(request):
         total_components=Count('id'),
         avg_price=Avg('price_usd'),
     )
+    rate = get_usd_to_rub_rate()
 
     context = {
         'chart1_html': chart1_html,
         'chart2_html': chart2_html,
         'stats': stats,
         'categories_count': Category.objects.count(),
+        'rate': rate,
     }
     return render(request, 'configurator/analytics.html', context)
 
