@@ -43,3 +43,59 @@
 ## 6. Изменения в ходе реализации
 - Все цены переведены в рубли как основная валюта, USD отображается дополнительно
 - Добавлены фотографии комплектующих
+
+  ## 7. Схема данных и блок-схема работы сервиса
+
+```mermaid
+graph TD
+    subgraph "Модели данных (ER)"
+        Category[Category<br/>id, name, slug]
+        Component[Component<br/>id, name, price_usd, specs]
+        Build[Build<br/>id, name, is_public]
+        User[User<br/>id, username, email]
+        Rule[CompatibilityRule<br/>id, spec_key]
+        
+        Category -->|1:N| Component
+        User -->|1:N| Build
+        Build -->|M:N| Component
+        Rule -->|N:1| Category
+    end
+
+    subgraph "Блок-схема работы"
+        Start(Пользователь) --> Home[Главная]
+        
+        Home --> Catalog[Каталог]
+        Home --> Analytics[Аналитика]
+        Home --> Auth[Вход]
+        
+        Catalog --> Filter[Фильтр/поиск/сортировка]
+        Filter --> ComponentPage[Страница компонента]
+        ComponentPage -->|Конвертация| API[ExchangeRate-API]
+        ComponentPage --> CheckAuth{Авторизован?}
+        CheckAuth -->|Да| AddToBuild[Добавить в сборку]
+        CheckAuth -->|Нет| Auth
+        
+        Analytics --> Pandas[Pandas агрегация]
+        Pandas --> Plotly[Plotly графики]
+        
+        Auth --> Profile[Личный кабинет]
+        Profile --> Builds[Мои сборки]
+        Builds --> BuildDetail[Страница сборки]
+        
+        BuildDetail --> Total[Итоговая стоимость]
+        BuildDetail --> Chart[Круговая диаграмма]
+        BuildDetail --> Compatibility{Проверка совместимости}
+        
+        Compatibility -->|Сравнение spec_key| RuleCheck[CompatibilityRule]
+        RuleCheck --> Warning[Вывод предупреждений]
+    end
+
+    style Category fill:#e1f5fe
+    style Component fill:#e1f5fe
+    style Build fill:#e1f5fe
+    style User fill:#e1f5fe
+    style Rule fill:#e1f5fe
+    style API fill:#fff3e0
+    style Pandas fill:#e8f5e9
+    style Plotly fill:#e8f5e9
+```
