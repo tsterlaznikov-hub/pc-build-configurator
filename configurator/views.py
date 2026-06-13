@@ -3,6 +3,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Avg, Sum
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from .models import Category, Component, Build
 from .forms import RegisterForm, BuildForm, ComponentFilterForm
@@ -15,6 +17,7 @@ from .services import (
 )
 
 
+@cache_page(60 * 5)
 def home(request):
     categories = Category.objects.annotate(component_count=Count('components'))
     public_builds = Build.objects.filter(
@@ -30,6 +33,7 @@ def home(request):
     return render(request, 'configurator/index.html', context)
 
 
+@cache_page(60 * 15)
 def catalog(request):
     form = ComponentFilterForm(request.GET)
     components = Component.objects.select_related('category').all()
@@ -202,6 +206,7 @@ def build_detail(request, pk):
     return render(request, 'configurator/build_detail.html', context)
 
 
+@cache_page(60 * 60)
 def analytics(request):
     chart1_html, chart2_html = get_analytics_charts()
 

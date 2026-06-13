@@ -92,6 +92,11 @@ def get_build_price_chart(build):
 
 
 def get_analytics_charts():
+    cache_key = 'analytics_charts'
+    cached_charts = cache.get(cache_key)
+    if cached_charts:
+        return cached_charts
+
     rate = get_usd_to_rub_rate()
     components = Component.objects.select_related('category').all()
 
@@ -142,7 +147,10 @@ def get_analytics_charts():
         plot_bgcolor='rgba(0,0,0,0)',
     )
 
-    return (
+    result = (
         fig1.to_html(full_html=False, include_plotlyjs='cdn'),
         fig2.to_html(full_html=False, include_plotlyjs=False),
     )
+
+    cache.set(cache_key, result, 3600)
+    return result
