@@ -84,10 +84,3 @@ LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
 EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY', '')
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}

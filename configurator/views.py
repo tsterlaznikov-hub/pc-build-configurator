@@ -2,9 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Avg, Sum
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
+from django.db.models import Count, Avg
 
 from .models import Category, Component, Build
 from .forms import RegisterForm, BuildForm, ComponentFilterForm
@@ -17,7 +15,6 @@ from .services import (
 )
 
 
-@cache_page(60 * 5)
 def home(request):
     categories = Category.objects.annotate(component_count=Count('components'))
     public_builds = Build.objects.filter(
@@ -33,7 +30,6 @@ def home(request):
     return render(request, 'configurator/index.html', context)
 
 
-@cache_page(60 * 15)
 def catalog(request):
     form = ComponentFilterForm(request.GET)
     components = Component.objects.select_related('category').all()
@@ -74,7 +70,6 @@ def catalog(request):
     return render(request, 'configurator/catalog.html', context)
 
 
-@cache_page(60 * 15)
 def component_detail(request, pk):
     component = get_object_or_404(Component, pk=pk)
     price_rub = convert_to_rub(component.price_usd)
@@ -121,7 +116,6 @@ def remove_from_build(request, build_pk, component_pk):
 
 
 @login_required
-@cache_page(60 * 5)
 def my_builds(request):
     builds = Build.objects.filter(
         user=request.user
@@ -187,7 +181,6 @@ def build_delete(request, pk):
     return render(request, 'configurator/build_confirm_delete.html', {'build': build})
 
 
-@cache_page(60 * 5)
 def build_detail(request, pk):
     build = get_object_or_404(Build, pk=pk)
 
@@ -212,7 +205,6 @@ def build_detail(request, pk):
     return render(request, 'configurator/build_detail.html', context)
 
 
-@cache_page(60 * 60)
 def analytics(request):
     chart1_html, chart2_html = get_analytics_charts()
 
@@ -247,7 +239,6 @@ def register(request):
 
 
 @login_required
-@cache_page(60 * 5)
 def profile(request):
     builds_count = Build.objects.filter(user=request.user).count()
     public_builds_count = Build.objects.filter(
@@ -259,3 +250,8 @@ def profile(request):
         'public_builds_count': public_builds_count,
     }
     return render(request, 'configurator/profile.html', context)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
