@@ -69,23 +69,58 @@ def get_build_price_chart(build):
     if not components:
         return None
 
-    labels = [str(c) for c in components]
-    values = [round(float(c.price_usd) * rate, 2) for c in components]
+    grouped = {}
+    for c in components:
+        name = str(c)
+        price = round(float(c.price_usd) * rate, 2)
+        if name in grouped:
+            grouped[name]['value'] += price
+            grouped[name]['count'] += 1
+        else:
+            grouped[name] = {'value': price, 'count': 1}
+
+    labels = []
+    values = []
+    for name, data in grouped.items():
+        if data['count'] > 1:
+            labels.append(f"{name} (x{data['count']})")
+        else:
+            labels.append(name)
+        values.append(data['value'])
+
+    if len(labels) > 8:
+        top_8_values = values[:8]
+        top_8_labels = labels[:8]
+        other_value = sum(values[8:])
+        top_8_values.append(other_value)
+        top_8_labels.append(f"Другие ({len(labels) - 8} шт.)")
+        values = top_8_values
+        labels = top_8_labels
 
     fig = go.Figure(data=[go.Pie(
         labels=labels,
         values=values,
-        hole=0.3,
+        hole=0.35,
         textinfo='label+percent',
+        textposition='auto',
+        insidetextorientation='horizontal',
     )])
+
+    fig.update_traces(
+        textfont_size=11,
+        automargin=True,
+        sort=False
+    )
 
     fig.update_layout(
         title='Распределение стоимости компонентов (₽)',
-        showlegend=True,
-        height=400,
-        margin=dict(t=50, b=0, l=0, r=0),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        height=450,
+        margin=dict(t=50, b=20, l=20, r=20),
+        annotations=[dict(
+            text=f'Всего: {components.count()} комп.',
+            x=0.5, y=0.5, font_size=12, showarrow=False
+        )]
     )
 
     return fig.to_html(full_html=False, include_plotlyjs='cdn')

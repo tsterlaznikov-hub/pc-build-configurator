@@ -32,8 +32,8 @@
                         <i class="bi bi-cpu text-primary"></i>
                         <strong>{{ item.obj.components.count }}</strong> компонентов
                     </p>
-                    <p class="text-primary fw-bold mb-1">${{ item.total_usd }}</p>
-                    <p class="text-muted small">≈ {{ item.total_rub }} ₽</p>
+                    <p class="text-primary fw-bold mb-1">{{ item.total_rub }} ₽</p>
+                    <p class="text-muted small">≈ ${{ item.total_usd }}</p>
                     <p class="text-muted small">
                         <i class="bi bi-clock"></i>
                         {{ item.obj.updated_at|date:"d.m.Y" }}

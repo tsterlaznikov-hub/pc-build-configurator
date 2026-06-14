@@ -74,6 +74,7 @@ def catalog(request):
     return render(request, 'configurator/catalog.html', context)
 
 
+@cache_page(60 * 15)
 def component_detail(request, pk):
     component = get_object_or_404(Component, pk=pk)
     price_rub = convert_to_rub(component.price_usd)
@@ -100,8 +101,11 @@ def add_to_build(request, component_pk):
         build_id = request.POST.get('build_id')
         if build_id:
             build = get_object_or_404(Build, pk=build_id, user=request.user)
-            build.components.add(component)
-            messages.success(request, f'{component} добавлен в сборку «{build.name}»!')
+            if component not in build.components.all():
+                build.components.add(component)
+                messages.success(request, f'{component} добавлен в сборку «{build.name}»!')
+            else:
+                messages.warning(request, f'{component} уже есть в сборке «{build.name}»!')
         return redirect('component_detail', pk=component_pk)
 
     return redirect('component_detail', pk=component_pk)
@@ -117,6 +121,7 @@ def remove_from_build(request, build_pk, component_pk):
 
 
 @login_required
+@cache_page(60 * 5)
 def my_builds(request):
     builds = Build.objects.filter(
         user=request.user
@@ -182,6 +187,7 @@ def build_delete(request, pk):
     return render(request, 'configurator/build_confirm_delete.html', {'build': build})
 
 
+@cache_page(60 * 5)
 def build_detail(request, pk):
     build = get_object_or_404(Build, pk=pk)
 
@@ -241,6 +247,7 @@ def register(request):
 
 
 @login_required
+@cache_page(60 * 5)
 def profile(request):
     builds_count = Build.objects.filter(user=request.user).count()
     public_builds_count = Build.objects.filter(
