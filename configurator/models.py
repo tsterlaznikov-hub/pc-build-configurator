@@ -76,8 +76,17 @@ class Build(models.Model):
     def __str__(self):
         return f'{self.name} ({self.user.username})'
 
-    def total_price_usd(self):
-        return sum(c.price_usd for c in self.components.all())
+    @property
+    def total_price_usd(self) -> float:
+        """Возвращает общую стоимость сборки в USD."""
+        return sum(component.price_usd for component in self.components.all())
+
+    @property
+    def total_price_rub(self) -> float:
+        """Возвращает общую стоимость сборки в рублях по актуальному курсу."""
+        from configurator.services import get_usd_to_rub_rate
+        rate = get_usd_to_rub_rate()
+        return round(float(self.total_price_usd) * rate, 2)
 
 
 class CompatibilityRule(models.Model):

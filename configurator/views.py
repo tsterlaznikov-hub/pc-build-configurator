@@ -126,7 +126,7 @@ def my_builds(request):
     builds_with_price = []
     rate = get_usd_to_rub_rate()
     for build in builds:
-        total_usd = build.total_price_usd()
+        total_usd = build.total_price_usd
         builds_with_price.append({
             'obj': build,
             'total_usd': total_usd,
@@ -189,7 +189,7 @@ def build_detail(request, pk):
         return redirect('home')
 
     rate = get_usd_to_rub_rate()
-    total_usd = build.total_price_usd()
+    total_usd = build.total_price_usd
     total_rub = round(float(total_usd) * rate, 2)
     compatibility_warnings = check_compatibility(build)
     chart_html = get_build_price_chart(build)

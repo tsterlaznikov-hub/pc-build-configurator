@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Build, Component
+from .models import Build, Category
 
 
 class RegisterForm(UserCreationForm):
@@ -54,7 +54,9 @@ class BuildForm(forms.ModelForm):
 
 
 class ComponentFilterForm(forms.Form):
-    category = forms.ChoiceField(
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        empty_label='Все категории',
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'})
     )

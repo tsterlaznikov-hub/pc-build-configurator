@@ -13,11 +13,12 @@ def get_usd_to_rub_rate():
 
     try:
         response = requests.get(
-            'https://api.exchangerate-api.com/v4/latest/USD',
-            timeout=2
+            'https://open.er-api.com/v6/latest/USD',
+            timeout=5
         )
+        response.raise_for_status()
         data = response.json()
-        rate = data['rates']['RUB']
+        rate = float(data['rates']['RUB'])
         cache.set('usd_rub_rate', rate, timeout=3600)
         return rate
     except Exception:
@@ -26,7 +27,7 @@ def get_usd_to_rub_rate():
 
 def convert_to_rub(price_usd):
     rate = get_usd_to_rub_rate()
-    return round(float(price_usd) * rate, 2)
+    return round(float(price_usd) * rate)
 
 
 def check_compatibility(build):
@@ -70,20 +71,27 @@ def get_build_price_chart(build):
         return None
 
     labels = [str(c) for c in components]
-    values = [round(float(c.price_usd) * rate, 2) for c in components]
+    values = [round(float(c.price_usd) * rate) for c in components]
 
     fig = go.Figure(data=[go.Pie(
         labels=labels,
         values=values,
-        hole=0.3,
-        textinfo='label+percent',
+        hole=0.4,
+        textinfo='percent',
+        hovertemplate='<b>%{label}</b><br>%{value:,.0f} ₽<br>%{percent}<extra></extra>',
     )])
 
     fig.update_layout(
         title='Распределение стоимости компонентов (₽)',
         showlegend=True,
+        legend=dict(
+            orientation='v',
+            x=1.05,
+            y=0.5,
+            font=dict(size=11),
+        ),
         height=400,
-        margin=dict(t=50, b=0, l=0, r=0),
+        margin=dict(t=50, b=20, l=20, r=150),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
     )
@@ -101,7 +109,7 @@ def get_analytics_charts():
     data = [
         {
             'category': c.category.name,
-            'price_rub': round(float(c.price_usd) * rate, 2),
+            'price_rub': round(float(c.price_usd) * rate),
             'brand': c.brand,
             'name': str(c),
         }
@@ -110,6 +118,7 @@ def get_analytics_charts():
     df = pd.DataFrame(data)
 
     avg_by_category = df.groupby('category')['price_rub'].mean().reset_index()
+    avg_by_category['price_rub'] = avg_by_category['price_rub'].round()
     fig1 = px.bar(
         avg_by_category,
         x='category',
@@ -126,6 +135,7 @@ def get_analytics_charts():
     )
 
     avg_by_brand = df.groupby('brand')['price_rub'].mean().reset_index()
+    avg_by_brand['price_rub'] = avg_by_brand['price_rub'].round()
     avg_by_brand = avg_by_brand.sort_values('price_rub', ascending=False).head(10)
     fig2 = px.bar(
         avg_by_brand,

@@ -38,7 +38,7 @@ class BuildModelTest(TestCase):
         self.assertEqual(str(self.build), 'Тестовая сборка (testuser)')
 
     def test_build_total_price_empty(self):
-        self.assertEqual(self.build.total_price_usd(), 0)
+        self.assertEqual(self.build.total_price_usd, 0)
 
     def test_build_total_price_with_components(self):
         category = Category.objects.create(name='CPU', slug='cpu')
@@ -46,7 +46,7 @@ class BuildModelTest(TestCase):
             name='Core i5', category=category, brand='Intel', price_usd=300.00
         )
         self.build.components.add(component)
-        self.assertEqual(float(self.build.total_price_usd()), 300.00)
+        self.assertEqual(float(self.build.total_price_usd), 300.00)
 
 
 class ConvertToRubTest(TestCase):
