@@ -1,28 +1,57 @@
+import logging
 import requests
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
+from django.conf import settings
 from django.core.cache import cache
 from .models import Component, Category
 
+logger = logging.getLogger(__name__)
+
+EXCHANGE_RATE_API_URL_TEMPLATE = 'https://v6.exchangerate-api.com/v6/{api_key}/latest/USD'
+CACHE_KEY = 'usd_rub_rate'
+CACHE_TIMEOUT_SECONDS = 1800
+FALLBACK_CACHE_TIMEOUT_SECONDS = 60
+FALLBACK_RATE = 90.0
+
 
 def get_usd_to_rub_rate():
-    cached_rate = cache.get('usd_rub_rate')
-    if cached_rate:
+    cached_rate = cache.get(CACHE_KEY)
+    if cached_rate is not None:
         return cached_rate
 
-    try:
-        response = requests.get(
-            'https://open.er-api.com/v6/latest/USD',
-            timeout=5
+    api_key = settings.EXCHANGE_RATE_API_KEY
+    if not api_key:
+        logger.warning(
+            'EXCHANGE_RATE_API_KEY не настроен. Используется запасное значение %.2f',
+            FALLBACK_RATE,
         )
+        cache.set(CACHE_KEY, FALLBACK_RATE, timeout=FALLBACK_CACHE_TIMEOUT_SECONDS)
+        return FALLBACK_RATE
+
+    url = EXCHANGE_RATE_API_URL_TEMPLATE.format(api_key=api_key)
+
+    try:
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         data = response.json()
-        rate = float(data['rates']['RUB'])
-        cache.set('usd_rub_rate', rate, timeout=3600)
+
+        if data.get('result') != 'success':
+            raise ValueError(f"API вернул ошибку: {data.get('error-type', 'неизвестная ошибка')}")
+
+        rate = float(data['conversion_rates']['RUB'])
+        cache.set(CACHE_KEY, rate, timeout=CACHE_TIMEOUT_SECONDS)
+        logger.info('Курс USD/RUB обновлён из внешнего API: %.4f', rate)
         return rate
-    except Exception:
-        return 90.0
+    except (requests.RequestException, KeyError, ValueError, TypeError) as exc:
+        logger.warning(
+            'Не удалось получить курс USD/RUB из внешнего API (%s). '
+            'Используется запасное значение %.2f',
+            exc, FALLBACK_RATE,
+        )
+        cache.set(CACHE_KEY, FALLBACK_RATE, timeout=FALLBACK_CACHE_TIMEOUT_SECONDS)
+        return FALLBACK_RATE
 
 
 def convert_to_rub(price_usd):
