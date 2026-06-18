@@ -34,19 +34,13 @@ def catalog(request):
     form = ComponentFilterForm(request.GET)
     components = Component.objects.select_related('category').all()
 
-    categories = Category.objects.all()
-    category_choices = [('', 'Все категории')] + [
-        (c.id, c.name) for c in categories
-    ]
-    form.fields['category'].choices = category_choices
-
     if form.is_valid():
-        category_id = form.cleaned_data.get('category')
+        category = form.cleaned_data.get('category')
         search = form.cleaned_data.get('search')
         sort = form.cleaned_data.get('sort')
 
-        if category_id:
-            components = components.filter(category_id=category_id)
+        if category:
+            components = components.filter(category=category)
         if search:
             components = components.filter(name__icontains=search) | \
                          components.filter(brand__icontains=search)
